@@ -148,13 +148,40 @@
         }
 
         if (settings.showAdvanced) {
+
+          // TODO: here's where we need to get to work
+          // debugger;
+          // the default color is red
+          var hsl = { h: 0 , s : 100 , l : 50 }, _hsl = { h: 0 , s : 100 , l : 50 }, color = "FF0000";
+          if (myColorVars.typedColor) {
+            hsl = tinycolor(myColorVars.typedColor).toHsl();
+            _hsl = tinycolor(myColorVars.typedColor).toHsl();
+            Object.keys(hsl).forEach(function(key) {
+              if (key !== "h") hsl[key] = hsl[key] * 100;
+              hsl[key] = (""+hsl[key]).substr(0,2);
+            });
+            color = myColorVars.typedColor;
+          }
+          setTimeout(function() {
+            methods.updateHueStyles($hueSpectrum,_hsl.s,_hsl.l);
+            methods.updateSaturationStyles($saturationSpectrum,_hsl.h,_hsl.l);
+            methods.updateLightnessStyles($lightnessSpectrum,_hsl.h,_hsl.s);
+            $hueHighlightBand.css({ left : ((_hsl.h / 360) * 300) + "px" });
+            $lightnessHighlightBand.css({ left : (_hsl.l * 300) + "px" });
+            $saturationHighlightBand.css({ left : (_hsl.s * 300) + "px" });
+            // methods.calculateHighlightedColor.apply($hueSpectrum, [{type: "advanced", hsl : _hsl }]);
+            // methods.calculateHighlightedColor.apply($saturationSpectrum, [{type: "advanced", hsl : _hsl }]);
+            // methods.calculateHighlightedColor.apply($lightnessSpectrum, [{type: "advanced", hsl : _hsl }]);
+          },10);
+          // 
+
           var advancedColorsActiveClass = settings.showBasicColors || settings.showSavedColors ? 'inactive-content' : 'active-content';
           var $advanced = $("<div>").addClass("advanced-content").addClass(advancedColorsActiveClass).
                 append($("<h6>").addClass("advanced-instructions").text("Tap spectrum or drag band to change color")),
               $advancedList = $("<ul>").addClass("advanced-list"),
               $hueItem = $("<li>").addClass("hue-item"),
               $hueContent = $("<span>").addClass("hue-text").
-                text("Hue: ").append($("<span>").addClass("hue-value").text("0"));
+                text("Hue: ").append($("<span>").addClass("hue-value").text(hsl.h));
           var $hueSpectrum = $("<span>").addClass("color-box spectrum-hue");
           if (isIELT10) {
             $.each([0,1,2,3,4,5,6], function (i) {
@@ -170,7 +197,7 @@
           var $lightnessItem = $("<li>").addClass("lightness-item"),
               $lightnessSpectrum = $("<span>").addClass("color-box spectrum-lightness"),
               $lightnessContent = $("<span>").addClass("lightness-text").
-            text("Lightness: ").append($("<span>").addClass("lightness-value").text("50%"));
+            text("Lightness: ").append($("<span>").addClass("lightness-value").text(hsl.l + "%"));
           if (isIELT10) {
             $.each([0,1], function (i) {
               $lightnessSpectrum.append($("<span>").addClass("lightness-spectrum-" + i +
@@ -196,13 +223,14 @@
             $saturationHighlightBand.append($("<span>").addClass("highlight-band-stripe"));
           });
           var $saturationContent = $("<span>").addClass("saturation-text").
-            text("Saturation: ").append($("<span>").addClass("saturation-value").text("100%"));
+            text("Saturation: ").append($("<span>").addClass("saturation-value").text(hsl.s + "%"));
           $advancedList.append($saturationItem.append($saturationContent).append($saturationSpectrum.
             append($saturationHighlightBand)));
           var $previewItem = $("<li>").addClass("preview-item").append($("<span>").
               addClass("preview-text").text("Preview")),
             $preview = $("<span>").addClass("color-preview advanced").
-              append("<button class='color-select btn btn-mini advanced' type='button'>Select</button>");
+              append("<button class='color-select btn btn-mini advanced' type='button'>Select</button>")
+              .css({ 'background-color' : "#" + color });
           $advancedList.append($previewItem.append($preview));
           $dropdownContainer.append($advanced.append($advancedList));
         }
@@ -253,7 +281,7 @@
           
           // enforce .pick-a-color class on input
           $thisEl.addClass("pick-a-color");
-          
+
           // convert default color to valid hex value
           if (settings.allowBlank) {
             // convert to Hex only if the field init value is not blank
